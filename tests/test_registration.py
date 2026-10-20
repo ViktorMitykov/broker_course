@@ -47,7 +47,7 @@ def test_success_registration_with_kafka_producer(mail: MailApi, kafka_producer:
 
 
 def test_register_events_error_consumer(mail: MailApi, kafka_producer: KafkaProducer) -> None:
-    base = uuid.uuid4().hex + "_viktor"
+    base = uuid.uuid4().hex + "_viktors"
     message = {
         "input_data": {
             "login": base,
