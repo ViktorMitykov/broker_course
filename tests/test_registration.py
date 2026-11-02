@@ -147,3 +147,5 @@ def test_unknown_error_type(register_events_error_subscriber: RegisterEventsErro
 
     kafka_producer.send("register-events-errors", message)
     register_events_error_subscriber.find_message(login, "validation")
+
+# Для комита
