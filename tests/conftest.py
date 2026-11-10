@@ -5,6 +5,7 @@ from framework.iternal.http.mail import MailApi
 from framework.iternal.kafka.consumer import Consumer
 from framework.iternal.kafka.producer import Producer
 from framework.helpers.kafka.consumers.register_events import RegisterEventsSubscribers, RegisterEventsErrorsSubscriver
+from framework.iternal.rmq.publisher import RmqPublisher
 
 
 @pytest.fixture(scope="session")
@@ -21,6 +22,11 @@ def mail() -> MailApi:
 def kafka_producer() -> Producer:
     with Producer() as producer:
         yield producer
+
+@pytest.fixture(scope="session")
+def rmq_publisher() -> RmqPublisher:
+    with RmqPublisher() as rmq_publisher:
+        yield rmq_publisher
 
 @pytest.fixture(scope="session")
 def register_events_subscriber() -> RegisterEventsSubscribers:
