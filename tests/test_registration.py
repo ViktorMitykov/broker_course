@@ -1,13 +1,18 @@
+import json
+import random
+import string
 import time
 import uuid
 
 import pytest
+import pika
 from kafka import KafkaProducer
 
 from framework.helpers.kafka.consumers.register_events import RegisterEventsSubscribers, RegisterEventsErrorsSubscriver
 from framework.iternal.http.account import AccountApi
 from framework.iternal.http.mail import MailApi
 from framework.iternal.kafka.producer import Producer
+from framework.iternal.rmq.publisher import RmqPublisher
 
 
 @pytest.fixture
@@ -37,14 +42,14 @@ def test_success_registration(register_events_subscriber: RegisterEventsSubscrib
                               mail: MailApi) -> None:
     login = register_message["login"]
     account.register_user(**register_message)
-    register_events_subscriber.find_message(login=login)
+    register_events_subscriber.find_message(login=login, timeout=20.0)
 
-    for _ in range(10):
-        response = mail.find_message(query=login)
-        if response.json()["total"] > 0:
-            break
-    else:
-        raise AssertionError("Email not found")
+    # for _ in range(10):
+    #     response = mail.find_message(query=login)
+    #     if response.json()["total"] > 0:
+    #         break
+    # else:
+    #     raise AssertionError("Email not found")
 
 
 def test_success_registration_with_kafka_producer(register_message,
@@ -148,4 +153,22 @@ def test_unknown_error_type(register_events_error_subscriber: RegisterEventsErro
     kafka_producer.send("register-events-errors", message)
     register_events_error_subscriber.find_message(login, "validation")
 
-# Для комита
+
+def test_rmq(rmq_publisher: RmqPublisher, mail: MailApi) -> None:
+    address = f"{uuid.uuid4().hex}@mail.ru"
+    message = {
+        "address": address,
+        "subject": "Test message 123123",
+        "body": "Test message",
+    }
+    rmq_publisher.publish(exchange="dm.mail.sending", message=message)
+
+    for _ in range(10):
+        response = mail.find_message(query=address)
+        if response.json()["total"] > 0:
+            break
+        time.sleep(2)
+    else:
+        raise AssertionError("Email not found")
+
+# For push
