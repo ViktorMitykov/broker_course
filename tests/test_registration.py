@@ -170,3 +170,5 @@ def test_rmq(rmq_publisher: RmqPublisher, mail: MailApi) -> None:
         time.sleep(2)
     else:
         raise AssertionError("Email not found")
+
+# For push
