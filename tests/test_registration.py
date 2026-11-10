@@ -44,12 +44,12 @@ def test_success_registration(register_events_subscriber: RegisterEventsSubscrib
     account.register_user(**register_message)
     register_events_subscriber.find_message(login=login, timeout=20.0)
 
-    # for _ in range(10):
-    #     response = mail.find_message(query=login)
-    #     if response.json()["total"] > 0:
-    #         break
-    # else:
-    #     raise AssertionError("Email not found")
+    for _ in range(10):
+        response = mail.find_message(query=login)
+        if response.json()["total"] > 0:
+            break
+    else:
+        raise AssertionError("Email not found")
 
 
 def test_success_registration_with_kafka_producer(register_message,
