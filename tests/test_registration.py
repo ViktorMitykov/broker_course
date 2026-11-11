@@ -5,11 +5,11 @@ import uuid
 import pytest
 from kafka import KafkaProducer
 
-from framework.helpers.kafka.consumer.register_events import RegisterEventsSubscribers, RegisterEventsErrorsSubscriver
+from framework.helpers.kafka.consumers.register_events import RegisterEventsSubscribers, RegisterEventsErrorsSubscriver
+from framework.helpers.rmq.consumers.dm_mail_sending import DmMailSending
 from framework.iternal.http.account import AccountApi
 from framework.iternal.http.mail import MailApi
 from framework.iternal.kafka.producer import Producer
-from framework.iternal.rmq.amqconsumer import AmqConsumer
 from framework.iternal.rmq.publisher import RmqPublisher
 
 
@@ -21,10 +21,6 @@ def register_message() -> dict[str, str]:
         "email": f"{base}@mail.ru",
         "password": "123123"
     }
-
-@pytest.mark.parametrize("i", range(10))
-def test_send_registration(i, account: AccountApi, register_message: dict[str, str]):
-    account.register_user(**register_message)
 
 
 def test_failed_registration(account: AccountApi, mail: MailApi) -> None:
@@ -38,13 +34,16 @@ def test_failed_registration(account: AccountApi, mail: MailApi) -> None:
         raise AssertionError("Email found")
 
 
-def test_success_registration(register_events_subscriber: RegisterEventsSubscribers,
-                              register_message,
-                              account: AccountApi,
-                              mail: MailApi) -> None:
+def test_success_registration(
+        dm_mail_sending: DmMailSending,
+        register_events_subscriber: RegisterEventsSubscribers,
+        register_message,
+        account: AccountApi,
+        mail: MailApi) -> None:
     login = register_message["login"]
     account.register_user(**register_message)
     register_events_subscriber.find_message(login=login, timeout=20.0)
+    dm_mail_sending.find_message(login=login)
 
     for _ in range(10):
         response = mail.find_message(query=login)
@@ -172,10 +171,3 @@ def test_rmq(rmq_publisher: RmqPublisher, mail: MailApi) -> None:
         time.sleep(2)
     else:
         raise AssertionError("Email not found")
-
-def test_rms_subscriber():
-    with AmqConsumer() as consumer:
-        messages = consumer.get_message()
-        print(messages)
-
-# For push
