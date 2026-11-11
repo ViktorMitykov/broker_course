@@ -23,7 +23,15 @@ class AmqConsumer(Singleton):
         self._messages: queue.Queue = queue.Queue()
         self._queue_name = ""
 
-    def start(self):
+    @property
+    def exchange(self):
+        raise NotImplementedError("Set exchange")
+
+    @property
+    def routing_key(self):
+        raise NotImplementedError("Set routing key")
+
+    def _start(self):
         result = self._channel.queue_declare(
             queue="",
             exclusive=True,
@@ -68,7 +76,7 @@ class AmqConsumer(Singleton):
             except Exception as e:
                 print(f"Exception while processing message rmq: {e}")
 
-        self._channel.basic_consume(self._queue_name, on_message_callback)
+        self._channel.basic_consume(self._queue_name, on_message_callback, auto_ack=True)
 
         try:
             while self._running.is_set():
@@ -84,7 +92,7 @@ class AmqConsumer(Singleton):
         except queue.Empty:
             raise AssertionError(f"No message from queue: {self._queue_name}, within timeout: {timeout}")
 
-    def stop(self):
+    def _stop(self):
         self._running.clear()
 
         if self._thread and self._thread.is_alive():
@@ -111,8 +119,8 @@ class AmqConsumer(Singleton):
         print("Consumer stopped")
 
     def __enter__(self):
-        self.start()
+        self._start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.stop()
+        self._stop()

@@ -88,7 +88,7 @@ class Consumer(Singleton):
                 self._consumer.close(timeout_ms=2000)
                 print("Stop consuming")
             except Exception as e:
-                print(f"Error while closing consumer: {e}")
+                print(f"Error while closing consumers: {e}")
 
         del self._consumer
         self._watchers.clear()

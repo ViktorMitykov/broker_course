@@ -1,10 +1,11 @@
 import pytest
 
+from framework.helpers.rmq.consumers.dm_mail_sending import DmMailSending
 from framework.iternal.http.account import AccountApi
 from framework.iternal.http.mail import MailApi
 from framework.iternal.kafka.consumer import Consumer
 from framework.iternal.kafka.producer import Producer
-from framework.helpers.kafka.consumer.register_events import RegisterEventsSubscribers, RegisterEventsErrorsSubscriver
+from framework.helpers.kafka.consumers.register_events import RegisterEventsSubscribers, RegisterEventsErrorsSubscriver
 from framework.iternal.rmq.publisher import RmqPublisher
 
 
@@ -43,3 +44,8 @@ def kafka_consumer(
 ) -> Consumer:
     with Consumer(subscribers=[register_events_subscriber, register_events_error_subscriber]) as consumer:
         yield consumer
+
+@pytest.fixture(scope="session", autouse=True)
+def dm_mail_sending() -> DmMailSending:
+    with DmMailSending() as dm_mail_sending:
+        yield dm_mail_sending
