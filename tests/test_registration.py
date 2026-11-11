@@ -1,17 +1,15 @@
-import json
-import random
-import string
+
 import time
 import uuid
 
 import pytest
-import pika
 from kafka import KafkaProducer
 
-from framework.helpers.kafka.consumers.register_events import RegisterEventsSubscribers, RegisterEventsErrorsSubscriver
+from framework.helpers.kafka.consumer.register_events import RegisterEventsSubscribers, RegisterEventsErrorsSubscriver
 from framework.iternal.http.account import AccountApi
 from framework.iternal.http.mail import MailApi
 from framework.iternal.kafka.producer import Producer
+from framework.iternal.rmq.amqconsumer import AmqConsumer
 from framework.iternal.rmq.publisher import RmqPublisher
 
 
@@ -23,6 +21,10 @@ def register_message() -> dict[str, str]:
         "email": f"{base}@mail.ru",
         "password": "123123"
     }
+
+@pytest.mark.parametrize("i", range(10))
+def test_send_registration(i, account: AccountApi, register_message: dict[str, str]):
+    account.register_user(**register_message)
 
 
 def test_failed_registration(account: AccountApi, mail: MailApi) -> None:
@@ -170,5 +172,10 @@ def test_rmq(rmq_publisher: RmqPublisher, mail: MailApi) -> None:
         time.sleep(2)
     else:
         raise AssertionError("Email not found")
+
+def test_rms_subscriber():
+    with AmqConsumer() as consumer:
+        messages = consumer.get_message()
+        print(messages)
 
 # For push
