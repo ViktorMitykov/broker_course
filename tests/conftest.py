@@ -4,7 +4,7 @@ from framework.iternal.http.account import AccountApi
 from framework.iternal.http.mail import MailApi
 from framework.iternal.kafka.consumer import Consumer
 from framework.iternal.kafka.producer import Producer
-from framework.helpers.kafka.consumers.register_events import RegisterEventsSubscribers, RegisterEventsErrorsSubscriver
+from framework.helpers.kafka.consumer.register_events import RegisterEventsSubscribers, RegisterEventsErrorsSubscriver
 from framework.iternal.rmq.publisher import RmqPublisher
 
 
